@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.graph_objects as go
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -140,3 +141,65 @@ def compare_graphs():
       
    plt.tight_layout()
    plt.show()
+
+
+
+country_mapping = {
+    'AL': 'Albania', 'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria',
+    'CH': 'Switzerland', 'CY': 'Cyprus', 'CZ': 'Czechia', 'DE': 'Germany',
+    'DK': 'Denmark', 'EE': 'Estonia', 'ES': 'Spain', 'FI': 'Finland',
+    'FR': 'France', 'GB': 'United Kingdom', 'GE': 'Georgia', 'GR': 'Greece',
+    'HR': 'Croatia', 'HU': 'Hungary', 'IE': 'Ireland', 'IS': 'Iceland',
+    'IL': 'Israel', 'IT': 'Italy', 'LT': 'Lithuania', 'LU': 'Luxembourg',
+    'LV': 'Latvia', 'ME': 'Montenegro', 'MK': 'North Macedonia',
+    'NL': 'Netherlands', 'NO': 'Norway', 'PL': 'Poland', 'PT': 'Portugal',
+    'RO': 'Romania', 'RS': 'Serbia', 'RU': 'Russian Federation',
+    'SE': 'Sweden', 'SI': 'Slovenia', 'SK': 'Slovakia', 'TR': 'Turkey',
+    'UA': 'Ukraine', 'XK': 'Kosovo'
+}
+
+
+def plot_distribution_general(column_name, fig_width=1200, fig_height=800):
+   # Read the dataset
+   dataframe = pd.read_csv('ESS11/ESS11.csv', low_memory=False)
+   general = dataframe[['cntry', column_name]]
+   
+   # Replace country codes with names
+   general['cntry'] = general['cntry'].replace(country_mapping)
+   
+   # Group by country and the specified column, then calculate distribution
+   distribution = general.groupby(['cntry', column_name]).size().unstack(fill_value=0)
+   
+   # Dynamically define the categories based on the column's unique values
+   categories = distribution.columns.tolist()
+   
+   # Calculate the 'Mean' and normalize the distribution
+   distribution['Mean'] = (distribution * range(1, len(categories) + 1)).sum(axis=1) / distribution.sum(axis=1)
+   distribution = distribution.sort_values('Mean', ascending=False)
+   distribution_percentage = distribution.div(distribution.sum(axis=1), axis=0)
+   
+   # Create the figure
+   fig = go.Figure()
+   for category in categories:
+      fig.add_trace(
+         go.Bar(
+               y=distribution_percentage.index,
+               x=distribution_percentage[category],
+               name=category,
+               orientation='h'
+         )
+      )
+
+   # Update layout
+   fig.update_layout(
+      title=f'{column_name} distribution by country',
+      barmode='stack',
+      xaxis=dict(title='Percentage', tickformat=".0%"),
+      yaxis=dict(title='Country'),
+      legend_title='Frequency',
+      height=fig_height,  # Set height dynamically
+      width=fig_width,
+      margin=dict(l=100, r=50, t=50, b=50)
+   )
+   
+   fig.show()
