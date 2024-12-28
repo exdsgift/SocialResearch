@@ -203,3 +203,73 @@ def plot_distribution_general(column_name, fig_width=1200, fig_height=800):
    )
    
    fig.show()
+   
+# politics_var = [
+#    "polintr", "psppsgva", "actrolga", "psppipla", "cptppola", 
+#    "trstprl", "trstlgl", "trstplc", "trstplt", "trstprt", 
+#    "trstep", "trstun", "vote", "contplt", 
+#    "donprty", "badge", "sgnptit", "pbldmna", "bctprd", 
+#    "pstplonl", "volunfp", "clsprty", "prtdgcl", 
+#    "lrscale", "stflife", "stfeco", "stfgov", "stfdem", 
+#    "stfedu", "stfhlth", "gincdif", "freehms", "hmsfmlsh", 
+#    "hmsacld", "euftf", "lrnobed", "loylead", "imsmetn", 
+#    "imdfetn", "impcntr", "imbgeco", "imueclt", "imwbcnt"
+# ]
+
+def gen_plot(column_name, fig_width=1200, fig_height=800):
+   
+   listA = ["polintr", "psppsgva", "actrolga", "psppipla", "cptppola", "vote", "contplt",
+            "donprty", "badge", "sgnptit", "pbldmna", "bctprd", "pstplonl", "volunfp",
+            "clsprty", "prtdgcl", "gincdif", "freehms", "hmsfmlsh", "hmsacld", "lrnobed",
+            "loylead", "imsmetn", "imdfetn", "impcntr", "imbgeco"]
+   listB = ["trstprl", "trstlgl", "trstplc", "trstplt", "trstprt", "trstep", "trstun",
+            "lrscale", "stflife", "stfeco", "stfgov", "stfdem", "stfedu", "stfhlth", "euftf",
+            "imueclt", "imwbcnt"]
+
+   dataframe = pd.read_csv('ESS11/ESS11.csv', low_memory=False)
+   general = dataframe[['cntry', column_name]]
+   general['cntry'] = general['cntry'].replace(country_mapping)
+   
+   if column_name in listA:
+      general = general[~general[column_name].isin([6,7,8,9])]
+   
+   if column_name in listB:
+      general = general[~general[column_name].isin([66,77,88,99])]
+      
+   distribution = general.groupby(['cntry', column_name]).size().unstack(fill_value=0)
+   categories = distribution.columns.tolist()
+   
+
+   
+   # Calculate the 'Mean' and normalize the distribution
+   distribution['Mean'] = (distribution * range(1, len(categories) + 1)).sum(axis=1) / distribution.sum(axis=1)
+   distribution = distribution.sort_values('Mean', ascending=False)
+   distribution_percentage = distribution.div(distribution.sum(axis=1), axis=0)
+   
+   
+   
+   # Create the figure
+   fig = go.Figure()
+   for category in categories:
+      fig.add_trace(
+         go.Bar(
+               y=distribution_percentage.index,
+               x=distribution_percentage[category],
+               name=category,
+               orientation='h'
+         )
+      )
+
+   # Update layout
+   fig.update_layout(
+      title=f'{column_name} distribution by country',
+      barmode='stack',
+      xaxis=dict(title='Percentage', tickformat=".0%"),
+      yaxis=dict(title='Country'),
+      legend_title='Frequency',
+      height=fig_height,  # Set height dynamically
+      width=fig_width,
+      margin=dict(l=100, r=50, t=50, b=50)
+   )
+   
+   fig.show()
