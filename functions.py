@@ -20,6 +20,8 @@ def ds_filter_norway():
    ds1 = dsNO[colm]
    ds3 = dsNO[colm2]
    
+   
+   
    fig, axes = plt.subplots(2, 2, figsize = (10, 10))
    axes = axes.flatten()
 
@@ -76,6 +78,46 @@ def ds_filter_norway():
       
    plt.tight_layout()
    plt.show()
+   
+   title = "Correlation Plot"
+   
+   columns = colm + colm2
+   correlation_matrix = dsNO[columns].corr()
+   plt.figure(figsize=(8, 6))
+   sns.heatmap(correlation_matrix, annot=True, cmap='viridis', fmt=".2f", linewidths=0.5)
+   plt.title(title)
+   plt.show()
+
+   threshold=0
+   correlation_matrix2 = ds2.corr()
+   #mask = (correlation_matrix.abs() < threshold)
+   #filtered_correlation = correlation_matrix2.where(~mask, other=np.nan)
+
+   plt.figure(figsize=(12, 10))
+   sns.heatmap(
+      correlation_matrix2, 
+      #annot=True, 
+      cmap='viridis', 
+      fmt=".2f", 
+      linewidths=0.5, 
+      annot_kws={"size": 8}, 
+      cbar_kws={"shrink": 0.8}
+   )
+   plt.xticks(rotation=45, ha='right', fontsize=10)
+   plt.yticks(fontsize=10)
+   plt.title(title, fontsize=14)
+   plt.show()  
+   
+
+def correlation_plot(dataset, columns, title="Correlation Plot"):
+    """
+    Generate a heatmap for the correlation matrix of the specified columns in the dataset.
+    """
+    correlation_matrix = dataset[columns].corr()
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(correlation_matrix, annot=True, cmap='viridis', fmt=".2f", linewidths=0.5)
+    plt.title(title)
+    plt.show()
    
 
 def compare_graphs():
