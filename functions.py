@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
 import warnings
+from scipy.stats import chi2_contingency
+import textwrap
 
 warnings.filterwarnings('ignore')
 
@@ -15,21 +17,39 @@ def ds_filter_norway():
    dsNO = dsNO.dropna(axis= 1, how='all')
    
    colm = ['netusoft','ppltrst','pplfair','pplhlp']
+   col_2 = ['netusoft','ppltrst','pplfair','pplhlp', 'gndr']
    colm2 = ['nwspol', 'netustm']
-   
    ds1 = dsNO[colm]
    ds3 = dsNO[colm2]
+   ds4 = dsNO[col_2]
    
    
    
-   fig, axes = plt.subplots(2, 2, figsize = (10, 10))
+   fig, axes = plt.subplots(2, 2, figsize = (15, 10), dpi =200)
    axes = axes.flatten()
+   
+   titles = ['Internet use, how often',
+          'Most people can be trusted or you cant be\ntoo careful',
+          'Most people try to take advantage of you,\nor try to be fair',
+          'Most of the time people helpful or mostly\nlooking out for themselves']
 
    for i, col in enumerate(colm):
       sns.countplot(data=ds1, x = col, ax=axes[i], palette='mako')
-      axes[i].set_title(f'Distribution of {col} (NO)')
       axes[i].set_xlabel(col)
       axes[i].set_ylabel('Count')
+      axes[i].grid(False)
+      axes[i].set_title(f'{titles[i]} - NO')
+      
+      # Add percentages
+      total = len(ds1[col].dropna())
+      for p in axes[i].patches:
+         height = p.get_height()
+         percentage = f'{100 * height / total:.1f}%'
+         axes[i].annotate(percentage, 
+                           (p.get_x() + p.get_width() / 2., height), 
+                           ha='center', va='center', 
+                           xytext=(0, 5), textcoords='offset points', 
+                           fontsize=10, color='black')
       
       # unique_values = ds1[col].dropna().unique()
       # legend_labels = [str(val) for val in unique_values]
@@ -38,21 +58,105 @@ def ds_filter_norway():
    plt.tight_layout()
    plt.show()
    
+   fig, axes = plt.subplots(2, 2, figsize = (15, 10), dpi =200)
+   axes = axes.flatten()
+
+   for i, col in enumerate(colm):
+      sns.countplot(data=ds1, x = col, ax=axes[i], hue=ds4['gndr'])
+      axes[i].set_xlabel(col)
+      axes[i].set_ylabel('Count')
+      axes[i].grid(False)
+      axes[i].set_title(f'{titles[i]} - NO')
+      
+      # Add percentages
+      total = len(ds1[col].dropna())
+      for p in axes[i].patches:
+         height = p.get_height()
+         percentage = f'{100 * height / total:.1f}%'
+         axes[i].annotate(percentage, 
+                           (p.get_x() + p.get_width() / 2., height), 
+                           ha='center', va='center', 
+                           xytext=(0, 5), textcoords='offset points', 
+                           fontsize=10, color='black')
+      custom_labels = ['male', 'female']
+      axes[i].legend(custom_labels)
+      
+   plt.tight_layout()
+   plt.show()
+   
+   fig, axes = plt.subplots(2, 2, figsize=(15, 10), dpi=200)
+   axes = axes.flatten()
+
+   chi2_results = {}
+
+   for i, col in enumerate(colm):
+      sns.countplot(data=ds1, x=col, ax=axes[i], hue=ds4['gndr'])
+      axes[i].set_title(f'{titles[i]} - NO')
+      axes[i].set_xlabel(col)
+      axes[i].set_ylabel('Count')
+      axes[i].grid(False)
+      
+      # contingency table
+      contingency_table = pd.crosstab(ds1[col], ds4['gndr'])
+      
+      # chi-squared test
+      chi2, p, dof, expected = chi2_contingency(contingency_table)
+      chi2_results[col] = {'chi2': chi2, 'p-value': p, 'dof': dof, 'expected': expected}
+      
+      # Annotate the plot
+      axes[i].annotate(f'p-value: {p:.3f}', xy=(0.5, 0.9), xycoords='axes fraction', ha='center', fontsize=10, color='black')
+      
+      custom_labels = ['male', 'female']
+      axes[i].legend(custom_labels)
+
+   plt.tight_layout()
+   plt.show()
+
+   for col, result in chi2_results.items():
+      print(f"Column: {col}")
+      print(f"Chi2: {result['chi2']}")
+      print(f"P-value: {result['p-value']}")
+      print(f"Degrees of Freedom: {result['dof']}")
+      print(f"Expected Frequencies: \n{result['expected']}\n")
+   
+   
+   
+   
+   
+   
    values_remove = [6666,7777,8888,9999]
    ds3_new = ds3[~ds3['nwspol'].isin(values_remove)]
    ds3_new = ds3_new[~ds3_new['netustm'].isin(values_remove)]
 
-   fig, axes = plt.subplots(1, 2, figsize = (10, 5))
+   fig, axes = plt.subplots(1, 2, figsize=(10, 5), dpi=300)
    axes = axes.flatten()
 
+   labels = ['News about politics and current affairs,\nwatching, reading or listening, in minutes',
+          'Internet use, how often']
+
    for i, col in enumerate(colm2):
-      sns.kdeplot(data=ds3_new, x=col, ax=axes[i], fill=True, palette='mako')
-      axes[i].set_title(f'Distribution of {col} (NO)')
+      sns.kdeplot(data=ds3_new, x=col, ax=axes[i], fill=True, palette='viridis')
       axes[i].set_xlabel(col)
       axes[i].set_ylabel('Density')
+      axes[i].grid(False)
+      axes[i].set_title(f'{labels[i]} - NO')
+
+      # mean and median
+      mean_val = ds3_new[col].mean()
+      median_val = ds3_new[col].median()
+
+      # vertical lines
+      axes[i].axvline(mean_val, color='blue', linestyle='--', linewidth=1.5, label=f'Mean: {mean_val:.2f}')
+      axes[i].axvline(median_val, color='red', linestyle='-.', linewidth=1.5, label=f'Median: {median_val:.2f}')
+
+      axes[i].legend(fontsize=8)
 
    plt.tight_layout()
    plt.show()
+   
+   
+   
+   
    
    col2 = [
     "polintr", "psppsgva", "actrolga", "psppipla", "cptppola", 
@@ -67,14 +171,26 @@ def ds_filter_norway():
    ]
    ds2 = dsNO[col2]
    
-   fig, axes = plt.subplots(15, 3, figsize = (15, 75))
+   fig, axes = plt.subplots(15, 3, figsize = (15, 75), dpi=300)
    axes = axes.flatten()
 
    for i, col in enumerate(col2):
-      sns.countplot(data=ds2, x = col, ax=axes[i], palette='mako')
+      sns.countplot(data=ds2, x = col, ax=axes[i], palette='pastel')
       axes[i].set_title(f'Distribution of {col} (NO)')
       axes[i].set_xlabel(col)
       axes[i].set_ylabel('Count')
+      axes[i].grid(False)
+      
+      # Add percentages
+      total = len(ds2[col].dropna())
+      for p in axes[i].patches:
+         height = p.get_height()
+         percentage = f'{100 * height / total:.1f}%'
+         axes[i].annotate(percentage, 
+                           (p.get_x() + p.get_width() / 2., height), 
+                           ha='center', va='center', 
+                           xytext=(0, 5), textcoords='offset points', 
+                           fontsize=10, color='black')
       
    plt.tight_layout()
    plt.show()
@@ -83,7 +199,7 @@ def ds_filter_norway():
    
    columns = colm + colm2
    correlation_matrix = dsNO[columns].corr()
-   plt.figure(figsize=(8, 6))
+   plt.figure(figsize=(8, 6), dpi=200)
    sns.heatmap(correlation_matrix, annot=True, cmap='viridis', fmt=".2f", linewidths=0.5)
    plt.title(title)
    plt.show()
@@ -93,7 +209,7 @@ def ds_filter_norway():
    #mask = (correlation_matrix.abs() < threshold)
    #filtered_correlation = correlation_matrix2.where(~mask, other=np.nan)
 
-   plt.figure(figsize=(12, 10))
+   plt.figure(figsize=(12, 10), dpi=200)
    sns.heatmap(
       correlation_matrix2, 
       #annot=True, 
@@ -114,7 +230,7 @@ def correlation_plot(dataset, columns, title="Correlation Plot"):
     Generate a heatmap for the correlation matrix of the specified columns in the dataset.
     """
     correlation_matrix = dataset[columns].corr()
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(8, 6), dpi=200)
     sns.heatmap(correlation_matrix, annot=True, cmap='viridis', fmt=".2f", linewidths=0.5)
     plt.title(title)
     plt.show()
@@ -138,15 +254,23 @@ def compare_graphs():
    dsNO = dsNO[~dsNO['netustm'].isin(values_remove)]
    
    dsITA= dsITA[~dsITA['nwspol'].isin(values_remove)]
-   dsITA = dsITA[~dsITA['netustm'].isin(values_remove)]  
+   dsITA = dsITA[~dsITA['netustm'].isin(values_remove)]
+   
+   titles2 = ['Internet use, how often',
+          'Most people can be trusted or you cant be\ntoo careful',
+          'Most people try to take advantage of you,\nor try to be fair',
+          'Most of the time people helpful or mostly\nlooking out for themselves']
+   
+   titles1 = ['News about politics and current affairs,\nwatching, reading or listening, in minutes',
+          'Internet use, how often']
 
-   fig, axes = plt.subplots(1, 2, figsize = (10, 5))
+   fig, axes = plt.subplots(1, 2, figsize = (10, 5), dpi=200)
    axes = axes.flatten()
 
    for i, col in enumerate(colm2):
       sns.kdeplot(data=dsNO, x=col, ax=axes[i], fill=True, label='Norway')
       sns.kdeplot(data=dsITA, x=col, ax=axes[i], fill=True, label='Italy')
-      axes[i].set_title(f'Distribution of {col}')
+      axes[i].set_title(f'{titles1[i]}, IT vs NO')
       axes[i].set_xlabel(col)
       axes[i].set_ylabel('Density')
       axes[i].legend()
@@ -154,7 +278,7 @@ def compare_graphs():
    plt.tight_layout()
    plt.show()
    
-   fig, axes = plt.subplots(2, 2, figsize = (10, 10))
+   fig, axes = plt.subplots(2, 2, figsize = (10, 10), dpi=200)
    axes = axes.flatten()
    dsNO = dataset[dataset['cntry'] == 'NO'].dropna(axis= 1, how='all')
    dsITA = dataset[dataset['cntry'] == 'IT'].dropna(axis= 1, how='all')
@@ -172,7 +296,7 @@ def compare_graphs():
    for i, col in enumerate(colm1):
       sns.kdeplot(data=dsNO, x = col, ax=axes[i], fill=True, label = 'Norway')
       sns.kdeplot(data=dsITA, x = col, ax=axes[i], fill=True, label = 'Italy')
-      axes[i].set_title(f'Distribution of {col}')
+      axes[i].set_title(f'{titles2[i]}, IT vs NO')
       axes[i].set_xlabel(col)
       axes[i].set_ylabel('Count')
       axes[i].legend()
@@ -183,6 +307,74 @@ def compare_graphs():
       
    plt.tight_layout()
    plt.show()
+
+   titles_compare = ['Voted last national election',
+                     'Donated to or participated in political\nparty or pressure group last 12\nmonths',
+                     'Worn or displayed campaign badge/sticker\nlast 12 months',
+                     'Signed petition last 12 months',
+                     'Boycotted certain products last 12\nmonths',
+                     'Posted or shared anything about politics\nonline last 12 months',
+                     'Volunteered for not-for-profit or\ncharitable organisation',
+                     'Allow many/few immigrants of same\nrace/ethnic group as majority',
+                     'Allow many/few immigrants of different\nrace/ethnic group from majority',
+                     'Allow many/few immigrants from poorer\ncountries outside Europe']
+   
+   compare_list = ['vote', 'donprty', 'badge', 'sgnptit', 'bctprd', 'pstplonl', 'volunfp', 'imsmetn', 'imdfetn', 'impcntr']
+   values_remove = [7, 8]
+   dataset_filtered = dataset[dataset['cntry'].isin(['NO', 'IT'])]
+   dataset_filtered = dataset_filtered.replace(values_remove, pd.NA)
+
+   fig, axes = plt.subplots(4, 3, figsize=(15, 20), dpi=200)
+   axes = axes.flatten()
+
+   for i, col in enumerate(compare_list[:10]):
+      data = dataset_filtered[['cntry', col]].dropna()
+      data_grouped = data.groupby(['cntry', col]).size().reset_index(name='Count')
+      
+      total_counts = data_grouped.groupby('cntry')['Count'].transform('sum')
+      data_grouped['Percentage'] = (data_grouped['Count'] / total_counts) * 100
+      
+      # Plot
+      sns.barplot(data=data_grouped, x=col, y='Count', hue='cntry', ax=axes[i], palette='pastel')
+      axes[i].set_title(f'{titles_compare[i]}. IT vs NO')
+      axes[i].set_xlabel(col)
+      axes[i].set_ylabel('Count')
+      axes[i].legend(title='Country', loc='upper right')
+      
+      # Add percentages
+      for bar, percentage in zip(axes[i].patches, data_grouped['Percentage']):
+         x = bar.get_x() + bar.get_width() / 2
+         y = bar.get_height()
+         axes[i].text(x, y, f'{percentage:.1f}%', ha='center', va='bottom', fontsize=8)
+
+   # Remove unused axes
+   for j in range(10, len(axes)):
+      fig.delaxes(axes[j])
+
+   plt.tight_layout()
+   plt.show()
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
