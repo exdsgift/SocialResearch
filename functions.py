@@ -23,8 +23,6 @@ def ds_filter_norway():
    ds3 = dsNO[colm2]
    ds4 = dsNO[col_2]
    
-   
-   
    fig, axes = plt.subplots(2, 2, figsize = (15, 10), dpi =200)
    axes = axes.flatten()
    
@@ -56,6 +54,7 @@ def ds_filter_norway():
       # axes[i].legend(legend_labels, title=f'{col} Values', loc='upper right')
       
    plt.tight_layout()
+   plt.savefig(f'images/image8.pdf', bbox_inches='tight', dpi=300)
    plt.show()
    
    fig, axes = plt.subplots(2, 2, figsize = (15, 10), dpi =200)
@@ -82,6 +81,7 @@ def ds_filter_norway():
       axes[i].legend(custom_labels)
       
    plt.tight_layout()
+   plt.savefig(f'images/image9.pdf', bbox_inches='tight', dpi=300)
    plt.show()
    
    fig, axes = plt.subplots(2, 2, figsize=(15, 10), dpi=200)
@@ -110,6 +110,7 @@ def ds_filter_norway():
       axes[i].legend(custom_labels)
 
    plt.tight_layout()
+   plt.savefig(f'images/image10.pdf', bbox_inches='tight', dpi=300)
    plt.show()
 
    for col, result in chi2_results.items():
@@ -152,6 +153,7 @@ def ds_filter_norway():
       axes[i].legend(fontsize=8)
 
    plt.tight_layout()
+   plt.savefig(f'images/image11.pdf', bbox_inches='tight', dpi=300)
    plt.show()
    
    
@@ -193,6 +195,7 @@ def ds_filter_norway():
                            fontsize=10, color='black')
       
    plt.tight_layout()
+   plt.savefig(f'images/image12.pdf', bbox_inches='tight', dpi=300)
    plt.show()
    
    title = "Correlation Plot"
@@ -202,6 +205,7 @@ def ds_filter_norway():
    plt.figure(figsize=(8, 6), dpi=200)
    sns.heatmap(correlation_matrix, annot=True, cmap='viridis', fmt=".2f", linewidths=0.5)
    plt.title(title)
+   plt.savefig(f'images/image13.pdf', bbox_inches='tight', dpi=300)
    plt.show()
 
    threshold=0
@@ -222,6 +226,7 @@ def ds_filter_norway():
    plt.xticks(rotation=45, ha='right', fontsize=10)
    plt.yticks(fontsize=10)
    plt.title(title, fontsize=14)
+   plt.savefig(f'images/image14.pdf', bbox_inches='tight', dpi=300)
    plt.show()  
    
 
@@ -276,6 +281,7 @@ def compare_graphs():
       axes[i].legend()
 
    plt.tight_layout()
+   plt.savefig(f'images/image15.pdf', bbox_inches='tight', dpi=300)
    plt.show()
    
    fig, axes = plt.subplots(2, 2, figsize = (10, 10), dpi=200)
@@ -306,6 +312,7 @@ def compare_graphs():
       # axes[i].legend(legend_labels, title=f'{col} Values', loc='upper right')
       
    plt.tight_layout()
+   plt.savefig(f'images/image16.pdf', bbox_inches='tight', dpi=300)
    plt.show()
 
    titles_compare = ['Voted last national election',
@@ -352,6 +359,7 @@ def compare_graphs():
       fig.delaxes(axes[j])
 
    plt.tight_layout()
+   plt.savefig(f'images/image17.pdf', bbox_inches='tight', dpi=300)
    plt.show()
       
 
