@@ -385,7 +385,6 @@ def compare_graphs():
 
 
 
-
 country_mapping = {
     'AL': 'Albania', 'AT': 'Austria', 'BE': 'Belgium', 'BG': 'Bulgaria',
     'CH': 'Switzerland', 'CY': 'Cyprus', 'CZ': 'Czechia', 'DE': 'Germany',
