@@ -10,9 +10,13 @@ The European Social Survey (ESS) is an academically driven, cross-national surve
 - facilitate training in the effective use of ESS data;
 - ensure the visibility, accessibility and reach of ESS data among researchers in the social sciences and beyond, policy makers and the wider public, at both the national and international levels.
 
-<img src="images/image10.pdf" alt="img1" width="500"/>
+<p align="center">
+  <img src="pipeline_images/image10.png" alt="img1" width="700"/>
+</p>
 
-<img src="images/image15.pdf" alt="img2" width="500"/>
+<p align="center">
+  <img src="pipeline_images/image15.png" alt="img2" width="700"/>
+</p>
 
 
 The survey involves strict random probability sampling, aims for a high response rate and uses rigorous translation protocols. 
